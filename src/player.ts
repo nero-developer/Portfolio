@@ -16,6 +16,7 @@ interface PlayerNodes {
 }
 
 const SEEK_STEPS = 1000;
+const SWAP_MS = 260;
 
 function clock(seconds: number): string {
   if (!Number.isFinite(seconds)) return '0:00';
@@ -86,7 +87,7 @@ export function createPlayerView(radio: Radio, nodes: PlayerNodes): void {
   };
 
   const renderState = (): void => {
-    const playing = !audio.paused;
+    const playing = radio.playing;
     nodes.root.classList.toggle('playing', playing);
     nodes.toggle.dataset.state = playing ? 'playing' : 'paused';
     nodes.toggle.setAttribute('aria-label', playing ? 'Pausar' : 'Tocar');
@@ -113,7 +114,15 @@ export function createPlayerView(radio: Radio, nodes: PlayerNodes): void {
   nodes.previous.hidden = single;
   nodes.next.hidden = single;
 
-  radio.events.addEventListener('trackchange', renderTrack);
+  let swapTimer: number | undefined;
+  radio.events.addEventListener('trackchange', () => {
+    nodes.root.classList.add('swapping');
+    window.clearTimeout(swapTimer);
+    swapTimer = window.setTimeout(() => {
+      renderTrack();
+      nodes.root.classList.remove('swapping');
+    }, SWAP_MS);
+  });
   radio.events.addEventListener('timechange', renderTime);
   radio.events.addEventListener('statechange', renderState);
   radio.events.addEventListener('unavailable', renderUnavailable);

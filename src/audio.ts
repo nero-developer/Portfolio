@@ -9,6 +9,9 @@ export interface Radio {
   readonly tracks: Track[];
   readonly events: EventTarget;
   readonly available: boolean;
+  readonly playing: boolean;
+  readonly volume: number;
+  readonly muted: boolean;
   current(): Track;
   start(): void;
   toggle(): void;
@@ -22,7 +25,18 @@ export interface Radio {
 const MAX_TRACKS = 10;
 const DEFAULT_VOLUME = 0.4;
 const RESTART_THRESHOLD = 3;
+const FADE_IN = 2.5;
+const FADE_OUT = 3;
+const GAP_MS = 900;
+const FADE_TICK_MS = 50;
 const STORAGE_KEY = 'portfolio:volume';
+
+function gain(position: number, length: number): number {
+  const rise = position / FADE_IN;
+  const fall = Number.isFinite(length) && length > 0 ? (length - position) / FADE_OUT : 1;
+  const x = Math.min(1, Math.max(0, Math.min(rise, fall)));
+  return x * x * (3 - 2 * x);
+}
 
 function loadVolume(): number | null {
   try {
@@ -50,15 +64,28 @@ export function createRadio(items: PlaylistItem[]): Radio {
 
   const audio = new Audio();
   audio.preload = 'auto';
-  audio.volume = loadVolume() ?? DEFAULT_VOLUME;
 
   const events = new EventTarget();
   const broken = new Set<number>();
+  let userVolume = loadVolume() ?? DEFAULT_VOLUME;
   let index = 0;
   let wantsPlay = false;
+  let transitioning = false;
+  let fadeTimer: number | undefined;
+  let gapTimer: number | undefined;
 
   const emit = (name: string): void => {
     events.dispatchEvent(new Event(name));
+  };
+
+  const applyGain = (): void => {
+    audio.volume = userVolume * gain(audio.currentTime, audio.duration);
+  };
+
+  const startFade = (): void => {
+    window.clearInterval(fadeTimer);
+    applyGain();
+    fadeTimer = window.setInterval(applyGain, FADE_TICK_MS);
   };
 
   const play = (): void => {
@@ -68,6 +95,7 @@ export function createRadio(items: PlaylistItem[]): Radio {
   const load = (position: number): void => {
     index = position;
     audio.src = tracks[position].src;
+    applyGain();
     emit('trackchange');
     if (wantsPlay) play();
   };
@@ -78,6 +106,7 @@ export function createRadio(items: PlaylistItem[]): Radio {
       if (broken.has(candidate)) continue;
       if (candidate === index) {
         audio.currentTime = 0;
+        applyGain();
         if (wantsPlay) play();
       } else {
         load(candidate);
@@ -87,16 +116,38 @@ export function createRadio(items: PlaylistItem[]): Radio {
     emit('unavailable');
   };
 
-  audio.addEventListener('ended', () => step(1));
+  const skip = (direction: 1 | -1): void => {
+    window.clearTimeout(gapTimer);
+    transitioning = false;
+    step(direction);
+  };
+
+  audio.addEventListener('play', () => {
+    transitioning = false;
+    startFade();
+    emit('statechange');
+  });
+
+  audio.addEventListener('pause', () => {
+    window.clearInterval(fadeTimer);
+    if (audio.ended && wantsPlay) transitioning = true;
+    emit('statechange');
+  });
+
+  audio.addEventListener('ended', () => {
+    transitioning = true;
+    emit('statechange');
+    window.clearTimeout(gapTimer);
+    gapTimer = window.setTimeout(() => step(1), GAP_MS);
+  });
+
   audio.addEventListener('error', () => {
     broken.add(index);
     step(1);
   });
-  audio.addEventListener('play', () => emit('statechange'));
-  audio.addEventListener('pause', () => emit('statechange'));
+
   audio.addEventListener('timeupdate', () => emit('timechange'));
   audio.addEventListener('loadedmetadata', () => emit('timechange'));
-  audio.addEventListener('volumechange', () => emit('volumechange'));
 
   if (tracks.length > 0) load(0);
 
@@ -107,41 +158,62 @@ export function createRadio(items: PlaylistItem[]): Radio {
     get available() {
       return tracks.length > 0 && broken.size < tracks.length;
     },
+    get playing() {
+      return !audio.paused || transitioning;
+    },
+    get volume() {
+      return userVolume;
+    },
+    get muted() {
+      return audio.muted;
+    },
     current: () => tracks[index],
     start() {
       wantsPlay = true;
       play();
     },
     toggle() {
+      if (transitioning) {
+        window.clearTimeout(gapTimer);
+        transitioning = false;
+        wantsPlay = false;
+        emit('statechange');
+        return;
+      }
       if (audio.paused) {
         wantsPlay = true;
-        play();
+        if (audio.ended) step(1);
+        else play();
       } else {
         wantsPlay = false;
         audio.pause();
       }
     },
-    next: () => step(1),
+    next: () => skip(1),
     previous() {
       if (audio.currentTime > RESTART_THRESHOLD) audio.currentTime = 0;
-      else step(-1);
+      else skip(-1);
     },
     seek(seconds) {
       audio.currentTime = seconds;
     },
     setVolume(value) {
-      audio.volume = value;
+      userVolume = value;
       audio.muted = false;
       saveVolume(value);
+      applyGain();
+      emit('volumechange');
     },
     toggleMute() {
-      if (audio.volume === 0) {
-        audio.volume = DEFAULT_VOLUME;
+      if (userVolume === 0) {
+        userVolume = DEFAULT_VOLUME;
         audio.muted = false;
       } else {
         audio.muted = !audio.muted;
       }
-      saveVolume(audio.volume);
+      saveVolume(userVolume);
+      applyGain();
+      emit('volumechange');
     },
   };
 }

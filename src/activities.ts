@@ -7,8 +7,19 @@ import {
   type Presence,
 } from './lanyard';
 
+interface Entry {
+  element: HTMLElement;
+  signature: string;
+  swap: number;
+}
+
 const MAX_ACTIVITIES = 4;
 const TICK_INTERVAL = 1000;
+const SWAP_OUT_MS = 260;
+const SWAP_GAP_MS = 160;
+const LEAVE_MS = 380;
+
+const wait = (ms: number): Promise<void> => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 function elapsed(start: number): string {
   const minutes = Math.max(0, Math.floor((Date.now() - start) / 60000));
@@ -23,6 +34,25 @@ function clock(ms: number): string {
   const minutes = Math.floor(total / 60);
   const seconds = String(total % 60).padStart(2, '0');
   return `${minutes}:${seconds}`;
+}
+
+function keyFor(activity: Activity, counts: Map<string, number>): string {
+  const base = `${activity.type}:${activity.application_id ?? activity.name}`;
+  const seen = counts.get(base) ?? 0;
+  counts.set(base, seen + 1);
+  return seen ? `${base}#${seen}` : base;
+}
+
+function signature(activity: Activity): string {
+  const { start, end } = activity.timestamps ?? {};
+  return [
+    activity.name,
+    activity.details ?? '',
+    activity.state ?? '',
+    activity.assets?.large_image ?? '',
+    Boolean(start),
+    Boolean(start && end),
+  ].join('\u0000');
 }
 
 function cover(activity: Activity): HTMLElement {
@@ -77,11 +107,21 @@ function gameInfo(activity: Activity): HTMLElement {
   return info;
 }
 
-function card(activity: Activity): HTMLElement {
+function fill(element: HTMLElement, activity: Activity): void {
   const listening = activity.type === ACTIVITY_LISTENING;
-  const item = create('li', listening ? 'activity listening' : 'activity');
-  item.append(cover(activity), listening ? trackInfo(activity) : gameInfo(activity));
-  return item;
+  element.classList.toggle('listening', listening);
+  element.replaceChildren(cover(activity), listening ? trackInfo(activity) : gameInfo(activity));
+}
+
+function refreshTimes(element: HTMLElement, activity: Activity): void {
+  const { start, end } = activity.timestamps ?? {};
+  const bar = element.querySelector<HTMLElement>('.progress');
+  if (bar && start && end) {
+    bar.dataset.start = String(start);
+    bar.dataset.end = String(end);
+  }
+  const clockNode = element.querySelector<HTMLElement>('[data-elapsed]');
+  if (clockNode && start) clockNode.dataset.elapsed = String(start);
 }
 
 function tick(list: HTMLElement): void {
@@ -104,14 +144,80 @@ function tick(list: HTMLElement): void {
 }
 
 export function createActivitiesView(list: HTMLElement): (presence: Presence) => void {
+  const entries = new Map<string, Entry>();
+
+  const add = (key: string, activity: Activity): void => {
+    const element = create('li', 'activity entering');
+    fill(element, activity);
+    list.hidden = false;
+    list.append(element);
+    void element.offsetWidth;
+    element.classList.remove('entering');
+    entries.set(key, { element, signature: signature(activity), swap: 0 });
+  };
+
+  const change = async (entry: Entry, activity: Activity): Promise<void> => {
+    entry.swap += 1;
+    const current = entry.swap;
+    entry.signature = signature(activity);
+    entry.element.classList.add('swapping');
+    await wait(SWAP_OUT_MS + SWAP_GAP_MS);
+    if (entry.swap !== current) return;
+    fill(entry.element, activity);
+    void entry.element.offsetWidth;
+    entry.element.classList.remove('swapping');
+    tick(list);
+  };
+
+  const sync = (entry: Entry, activity: Activity): void => {
+    if (entry.signature === signature(activity)) {
+      refreshTimes(entry.element, activity);
+      return;
+    }
+    void change(entry, activity);
+  };
+
+  const remove = (key: string, entry: Entry): void => {
+    entries.delete(key);
+    entry.swap += 1;
+    entry.element.style.maxHeight = `${entry.element.offsetHeight}px`;
+    void entry.element.offsetWidth;
+    entry.element.classList.add('leaving');
+    void wait(LEAVE_MS).then(() => {
+      entry.element.remove();
+      list.hidden = list.children.length === 0;
+    });
+  };
+
+  const arrange = (keys: string[]): void => {
+    const desired = keys.map((key) => (entries.get(key) as Entry).element);
+    const current = Array.from(list.children).filter((child) => !child.classList.contains('leaving'));
+    if (desired.some((element, position) => element !== current[position])) {
+      desired.forEach((element) => list.append(element));
+    }
+  };
+
   window.setInterval(() => {
     if (!document.hidden && !list.hidden) tick(list);
   }, TICK_INTERVAL);
 
   return (presence) => {
-    const items = richActivities(presence, MAX_ACTIVITIES);
-    list.replaceChildren(...items.map(card));
-    list.hidden = items.length === 0;
+    const counts = new Map<string, number>();
+    const keys: string[] = [];
+
+    for (const activity of richActivities(presence, MAX_ACTIVITIES)) {
+      const key = keyFor(activity, counts);
+      keys.push(key);
+      const entry = entries.get(key);
+      if (entry) sync(entry, activity);
+      else add(key, activity);
+    }
+
+    for (const [key, entry] of entries) {
+      if (!keys.includes(key)) remove(key, entry);
+    }
+
+    arrange(keys);
     tick(list);
   };
 }

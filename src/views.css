@@ -1,0 +1,142 @@
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  background: rgba(255, 255, 255, var(--veil-alpha, 0));
+  -webkit-backdrop-filter: blur(var(--veil-blur, 0px));
+  backdrop-filter: blur(var(--veil-blur, 0px));
+}
+
+:root[data-tier='lite'] .veil {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: #7b8394;
+  background: #ffffff;
+  text-align: center;
+  will-change: transform;
+}
+
+.sheet.projects {
+  transform: translate3d(100%, 0, 0);
+}
+
+.sheet.more {
+  transform-origin: 50% 0;
+  transform: perspective(1400px) translate3d(0, 100%, 0);
+}
+
+.sheet p {
+  font-size: 1.1rem;
+}
+
+.back {
+  position: absolute;
+  top: max(20px, env(safe-area-inset-top));
+  left: max(20px, env(safe-area-inset-left));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px 10px 12px;
+  border: 1px solid #d9dde5;
+  border-radius: 999px;
+  color: #4b5362;
+  background: #ffffff;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.back:hover {
+  background: #f3f4f7;
+}
+
+.back:focus-visible {
+  outline: 2px solid #4b5362;
+  outline-offset: 2px;
+}
+
+.back svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sheet.more .back svg {
+  transform: rotate(-90deg);
+}
+
+.pull {
+  position: fixed;
+  top: 50%;
+  right: calc(max(20px, env(safe-area-inset-right)) + 72px);
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-top: -22px;
+  padding: 0;
+  border-radius: 50%;
+  color: var(--white);
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  cursor: grab;
+  touch-action: none;
+  scale: 0.85;
+  transition: scale 0.25s ease, background 0.2s ease;
+}
+
+.pull:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.pull.dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+.pull:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 3px;
+}
+
+.pull svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: nudge 1.6s ease-in-out infinite;
+}
+
+@keyframes nudge {
+  0%,
+  100% {
+    transform: translateX(3px);
+  }
+  50% {
+    transform: translateX(-5px);
+  }
+}
+
+@media (max-width: 760px), (max-height: 560px) {
+  .pull {
+    position: static;
+    margin-top: 6px;
+  }
+}

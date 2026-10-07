@@ -7,13 +7,11 @@ interface VolumeNodes {
 }
 
 export function createVolumeView(radio: Radio, nodes: VolumeNodes): void {
-  const { audio } = radio;
-
   const render = (): void => {
-    const silent = audio.muted || audio.volume === 0;
+    const silent = radio.muted || radio.volume === 0;
     nodes.mute.dataset.state = silent ? 'muted' : 'on';
     nodes.mute.setAttribute('aria-label', silent ? 'Ativar som' : 'Silenciar');
-    nodes.slider.value = String(Math.round(audio.volume * 100));
+    nodes.slider.value = String(Math.round(radio.volume * 100));
     nodes.slider.style.setProperty('--fill', `${silent ? 0 : nodes.slider.value}%`);
   };
 

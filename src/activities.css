@@ -82,3 +82,33 @@
   font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
+
+.activity {
+  overflow: hidden;
+  transition: opacity 0.35s ease, transform 0.35s ease, max-height 0.38s ease, padding 0.38s ease,
+    margin 0.38s ease, border-width 0.38s ease;
+}
+
+.activity > * {
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.activity.entering {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.activity.swapping > * {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.activity.leaving {
+  max-height: 0 !important;
+  margin-bottom: -10px;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-width: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+}

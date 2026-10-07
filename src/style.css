@@ -41,6 +41,7 @@ body {
 .links a,
 .stack,
 .player,
+.pull,
 .volume {
   -webkit-backdrop-filter: var(--blur);
   backdrop-filter: var(--blur);

@@ -42,7 +42,7 @@
       </div>
     </div>
 
-    <main class="page">
+    <main class="page" id="home">
       <section class="profile">
         <div class="avatar">
           <img id="avatar" alt="" width="168" height="168" />
@@ -53,6 +53,9 @@
         <ul class="activities" id="activities" hidden></ul>
         <ul class="links" id="links"></ul>
         <ul class="stack" id="stack"></ul>
+        <button class="pull" id="pull" type="button" aria-label="Ver projetos">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19" /></svg>
+        </button>
 
         <section class="player" id="player" aria-label="Rádio">
           <div class="player-head">
@@ -83,6 +86,26 @@
         </section>
       </section>
     </main>
+
+    <div class="veil" id="veil" aria-hidden="true" hidden></div>
+
+    <section class="sheet projects" id="projects" aria-label="Projetos" hidden>
+      <button class="back" type="button" data-back>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19" /></svg>
+        voltar
+      </button>
+      <p>ainda n fiz nada aqui ^^</p>
+    </section>
+
+    <section class="sheet more" id="more" aria-label="Outras coisas" hidden>
+      <button class="back" type="button" data-back>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19" /></svg>
+        voltar
+      </button>
+      <p>ainda n fiz nada aqui ^^</p>
+    </section>
+
+    <div class="cursor" id="cursor" aria-hidden="true"></div>
 
     <noscript>Este site precisa de JavaScript para mostrar o status do Discord.</noscript>
     <script type="module" src="/src/main.ts"></script>

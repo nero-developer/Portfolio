@@ -213,3 +213,12 @@
     margin-top: 6px;
   }
 }
+
+.player-head {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.player.swapping .player-head {
+  opacity: 0;
+  transform: translateY(4px);
+}
