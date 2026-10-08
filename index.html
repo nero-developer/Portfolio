@@ -29,65 +29,70 @@
       <span>clique para entrar</span>
     </button>
 
-    <div class="volume" id="volume">
-      <button id="mute" type="button" data-state="on" aria-label="Silenciar">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path class="body" d="M3 9v6h4l5 4V5L7 9H3z" />
-          <path class="waves" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" />
-          <path class="cross" d="M16 9.5l5 5M21 9.5l-5 5" />
-        </svg>
-      </button>
-      <div class="range-wrap">
-        <input class="slider" id="vol" type="range" min="0" max="100" step="1" value="40" aria-label="Volume" />
+    <div class="stage" id="stage">
+      <main class="page reveal" id="home">
+        <section class="profile">
+          <div class="avatar">
+            <img id="avatar" alt="" width="168" height="168" />
+            <span class="dot" id="dot" role="img" aria-label="Status do Discord"></span>
+          </div>
+          <h1 id="name">nero-developer</h1>
+          <p class="status" id="status" hidden></p>
+          <ul class="activities" id="activities" hidden></ul>
+          <ul class="links" id="links"></ul>
+        </section>
+      </main>
+
+      <ul class="stack reveal" id="stack"></ul>
+
+      <section class="player reveal" id="player" aria-label="Rádio">
+        <div class="player-head">
+          <div class="cover" id="cover"></div>
+          <div class="track">
+            <div class="title" id="track-title"></div>
+            <div class="artist" id="track-artist"></div>
+          </div>
+          <div class="eq" aria-hidden="true"><span></span><span></span><span></span></div>
+        </div>
+        <div class="seek">
+          <span id="time-now">0:00</span>
+          <input class="slider" id="seek" type="range" min="0" max="1000" step="1" value="0" aria-label="Progresso da música" />
+          <span id="time-total">0:00</span>
+        </div>
+        <div class="transport">
+          <button id="prev" type="button" aria-label="Música anterior">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="18,5 8,12 18,19" /><rect x="5" y="5" width="2.5" height="14" rx="1" /></svg>
+          </button>
+          <button class="main" id="toggle" type="button" data-state="paused" aria-label="Tocar">
+            <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><polygon points="8,4 20,12 8,20" /></svg>
+            <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1.2" /><rect x="14" y="4" width="4" height="16" rx="1.2" /></svg>
+          </button>
+          <button id="next" type="button" aria-label="Próxima música">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="6,5 16,12 6,19" /><rect x="16.5" y="5" width="2.5" height="14" rx="1" /></svg>
+          </button>
+        </div>
+      </section>
+
+      <div class="volume" id="volume">
+        <button id="mute" type="button" data-state="on" aria-label="Silenciar">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path class="body" d="M3 9v6h4l5 4V5L7 9H3z" />
+            <path class="waves" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" />
+            <path class="cross" d="M16 9.5l5 5M21 9.5l-5 5" />
+          </svg>
+        </button>
+        <div class="range-wrap">
+          <input class="slider" id="vol" type="range" min="0" max="100" step="1" value="40" aria-label="Volume" />
+        </div>
       </div>
     </div>
 
-    <main class="page" id="home">
-      <section class="profile">
-        <div class="avatar">
-          <img id="avatar" alt="" width="168" height="168" />
-          <span class="dot" id="dot" role="img" aria-label="Status do Discord"></span>
-        </div>
-        <h1 id="name">nero-developer</h1>
-        <p class="status" id="status" hidden></p>
-        <ul class="activities" id="activities" hidden></ul>
-        <ul class="links" id="links"></ul>
-        <ul class="stack" id="stack"></ul>
-        <button class="pull" id="pull" type="button" aria-label="Ver projetos">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19" /></svg>
-        </button>
-
-        <section class="player" id="player" aria-label="Rádio">
-          <div class="player-head">
-            <div class="cover" id="cover"></div>
-            <div class="track">
-              <div class="title" id="track-title"></div>
-              <div class="artist" id="track-artist"></div>
-            </div>
-            <div class="eq" aria-hidden="true"><span></span><span></span><span></span></div>
-          </div>
-          <div class="seek">
-            <span id="time-now">0:00</span>
-            <input class="slider" id="seek" type="range" min="0" max="1000" step="1" value="0" aria-label="Progresso da música" />
-            <span id="time-total">0:00</span>
-          </div>
-          <div class="transport">
-            <button id="prev" type="button" aria-label="Música anterior">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="18,5 8,12 18,19" /><rect x="5" y="5" width="2.5" height="14" rx="1" /></svg>
-            </button>
-            <button class="main" id="toggle" type="button" data-state="paused" aria-label="Tocar">
-              <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><polygon points="8,4 20,12 8,20" /></svg>
-              <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1.2" /><rect x="14" y="4" width="4" height="16" rx="1.2" /></svg>
-            </button>
-            <button id="next" type="button" aria-label="Próxima música">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="6,5 16,12 6,19" /><rect x="16.5" y="5" width="2.5" height="14" rx="1" /></svg>
-            </button>
-          </div>
-        </section>
-      </section>
-    </main>
-
-    <div class="veil" id="veil" aria-hidden="true" hidden></div>
+    <button class="pull pull-left" id="pull-left" type="button" aria-label="Ver projetos">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19" /></svg>
+    </button>
+    <button class="pull pull-up" id="pull-up" type="button" aria-label="Ver mais">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="5 15 12 8 19 15" /></svg>
+    </button>
 
     <section class="sheet projects" id="projects" aria-label="Projetos" hidden>
       <button class="back" type="button" data-back>

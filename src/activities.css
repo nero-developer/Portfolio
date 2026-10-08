@@ -112,3 +112,34 @@
   opacity: 0;
   transform: translateY(-6px);
 }
+
+@media (max-width: 760px), (max-height: 560px) {
+  .activities {
+    gap: 8px;
+  }
+
+  .activity {
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 16px;
+  }
+
+  .activity .art {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+  }
+
+  .activity .name {
+    font-size: 0.95rem;
+  }
+
+  .activity .line {
+    font-size: 0.8rem;
+  }
+
+  .activity .times {
+    font-size: 0.7rem;
+  }
+}

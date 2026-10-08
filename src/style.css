@@ -4,11 +4,20 @@
   --glass-line: rgba(255, 255, 255, 0.38);
   --blur: blur(10px);
   --font: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --bar-h: 0px;
+  --reserve: 96px;
 }
 
 :root[data-tier='lite'] {
   --glass: rgba(58, 64, 78, 0.5);
   --blur: none;
+}
+
+@media (max-width: 1100px), (max-height: 640px) {
+  :root {
+    --bar-h: 104px;
+    --reserve: calc(var(--bar-h) + 92px + env(safe-area-inset-bottom));
+  }
 }
 
 * {
@@ -21,17 +30,18 @@
 }
 
 html {
+  height: 100%;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100%;
   font-family: var(--font);
   color: var(--white);
   background: #6f7888;
-  overflow-x: hidden;
+  overflow: hidden;
+  overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -52,12 +62,13 @@ body {
   inset: 0;
   z-index: -1;
   overflow: hidden;
-  background: #6f7888 linear-gradient(165deg, #a9b1c0 0%, #8791a3 48%, #6b7587 100%) center / cover no-repeat;
+  background: #6f7888 linear-gradient(165deg, #a9b1c0 0%, #8791a3 48%, #6b7587 100%);
 }
 
-.wp-video {
+.wp-media {
   position: absolute;
   inset: 0;
+  z-index: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -65,7 +76,7 @@ body {
   transition: opacity 0.8s ease;
 }
 
-.wp-video.ready {
+.wp-media.ready {
   opacity: 1;
 }
 
@@ -95,7 +106,7 @@ body {
   animation: drift-b 32s ease-in-out infinite alternate;
 }
 
-.wallpaper.has-video .wp-blob,
+.wallpaper.has-media .wp-blob,
 :root[data-tier='lite'] .wp-blob,
 :root[data-tier='lite'] #motes {
   display: none;
@@ -179,18 +190,32 @@ body {
   }
 }
 
-.page {
-  display: grid;
-  place-items: center;
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding: 48px 20px;
+.stage {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  touch-action: pan-y;
+  transform-origin: 50% 50%;
+}
+
+.reveal {
   opacity: 0;
   transition: opacity 0.9s ease 0.15s;
 }
 
-body.entered .page {
+body.entered .reveal {
   opacity: 1;
+}
+
+.page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  padding: 48px 20px var(--reserve);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .profile {
@@ -199,6 +224,7 @@ body.entered .page {
   align-items: center;
   gap: 18px;
   width: min(100%, 420px);
+  margin: auto;
   text-align: center;
 }
 
@@ -358,9 +384,10 @@ h1 {
 }
 
 .stack {
-  position: fixed;
+  position: absolute;
   top: 50%;
   right: max(20px, env(safe-area-inset-right));
+  z-index: 4;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -404,7 +431,7 @@ h1 {
 }
 
 .volume {
-  position: fixed;
+  position: absolute;
   top: max(20px, env(safe-area-inset-top));
   left: max(20px, env(safe-area-inset-left));
   z-index: 5;
@@ -486,8 +513,7 @@ body.entered .volume.unavailable {
 
 @media (hover: none) {
   .range-wrap {
-    width: 132px;
-    padding-right: 16px;
+    display: none;
   }
 }
 
@@ -540,45 +566,88 @@ body.entered .volume.unavailable {
 }
 
 @media (max-width: 760px), (max-height: 560px) {
+  .page {
+    padding: 68px 16px var(--reserve);
+  }
+
+  .profile {
+    gap: 12px;
+  }
+
+  .avatar {
+    width: 104px;
+    height: 104px;
+    margin-bottom: 4px;
+  }
+
+  .avatar::before {
+    inset: -10px;
+  }
+
+  .dot {
+    right: -2px;
+    bottom: -2px;
+    width: 30px;
+    height: 30px;
+    border-width: 2px;
+  }
+
+  .dot svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  .status {
+    padding: 7px 14px;
+    font-size: 0.95rem;
+  }
+
+  .links {
+    gap: 10px;
+    margin-top: 2px;
+  }
+
+  .links a {
+    width: 46px;
+    height: 46px;
+  }
+
   .stack {
     position: static;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px;
-    max-width: 100%;
-    margin-top: 6px;
-    padding: 10px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px;
+    width: 100%;
+    max-width: 300px;
+    margin-top: 2px;
+    padding: 8px;
     transform: none;
   }
 
   .stack li {
-    width: 38px;
+    width: auto;
     height: 38px;
+    font-size: 22px;
   }
 
   .stack li::after {
     display: none;
   }
-}
 
-@media (max-width: 480px) {
-  .page {
-    padding: 72px 16px calc(32px + env(safe-area-inset-bottom));
+  .volume {
+    top: max(14px, env(safe-area-inset-top));
+    left: max(14px, env(safe-area-inset-left));
+    height: 42px;
+    border-radius: 14px;
   }
 
-  .avatar {
-    width: 144px;
-    height: 144px;
-  }
-
-  .links {
-    gap: 10px;
-  }
-
-  .links a {
-    width: 50px;
-    height: 50px;
+  .volume button {
+    width: 40px;
+    height: 40px;
   }
 }
 

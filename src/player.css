@@ -1,5 +1,5 @@
 .player {
-  position: fixed;
+  position: absolute;
   left: max(20px, env(safe-area-inset-left));
   bottom: max(20px, env(safe-area-inset-bottom));
   z-index: 4;
@@ -18,6 +18,12 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.player.swapping .player-head {
+  opacity: 0;
+  transform: translateY(4px);
 }
 
 .cover {
@@ -208,17 +214,64 @@
 
 @media (max-width: 1100px), (max-height: 640px) {
   .player {
-    position: static;
-    width: 100%;
-    margin-top: 6px;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    left: max(12px, env(safe-area-inset-left));
+    display: grid;
+    grid-template-areas:
+      'head transport'
+      'seek seek';
+    grid-template-columns: 1fr auto;
+    gap: 6px 8px;
+    width: auto;
+    max-width: 420px;
+    margin-inline: auto;
+    padding: 10px 12px 8px;
+    border-radius: 20px;
   }
-}
 
-.player-head {
-  transition: opacity 0.25s ease, transform 0.25s ease;
-}
+  .player-head {
+    grid-area: head;
+    min-width: 0;
+  }
 
-.player.swapping .player-head {
-  opacity: 0;
-  transform: translateY(4px);
+  .transport {
+    grid-area: transport;
+    gap: 0;
+  }
+
+  .seek {
+    grid-area: seek;
+  }
+
+  .seek span,
+  .eq {
+    display: none;
+  }
+
+  .cover {
+    width: 44px;
+    height: 44px;
+  }
+
+  .cover::after {
+    width: 8px;
+    height: 8px;
+  }
+
+  .cover svg {
+    width: 20px;
+    height: 20px;
+    margin-bottom: 10px;
+  }
+
+  .transport button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .transport .main {
+    width: 42px;
+    height: 42px;
+  }
 }

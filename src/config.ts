@@ -17,9 +17,15 @@ export interface PlaylistItem {
   cover?: string;
 }
 
+
+export interface WallpaperSet {
+  desktop: string;
+  phone?: string;
+}
+
 export interface SiteConfig {
   discordId: string;
-  wallpaper: string;
+  wallpapers: { home: WallpaperSet; projects: WallpaperSet; more: WallpaperSet };
   playlist: PlaylistItem[];
   links: SiteLink[];
   stack: StackItem[];
@@ -27,7 +33,11 @@ export interface SiteConfig {
 
 export const config: SiteConfig = {
   discordId: '1070475108742877294',
-  wallpaper: 'wallpaper.mp4',
+  wallpapers: {
+    home: { desktop: '/wallpaper-1', phone: '/wallpaper-phone-1' },
+    projects: { desktop: '/wallpaper-2', phone: '/wallpaper-phone-2' },
+    more: { desktop: '/wallpaper-3', phone: '/wallpaper-phone-3' },
+  },
   playlist: [
     { title: 'Nostalgic Tape Lofi Piano', artist: 'None', cover: '/cover-1.webp' },
     { title: 'Window Side Lofi Swing', artist: 'None', cover: '/cover-2.webp' },
@@ -36,10 +46,10 @@ export const config: SiteConfig = {
   ],
   links: [
     { id: 'github', label: 'GitHub', href: 'https://github.com/nero-developer' },
-    { id: 'linkedin', label: 'LinkedIn', href: 'https://www.linkedin.com/in/SEU_USUARIO' },
+    { id: 'linkedin', label: 'LinkedIn', href: 'https://www.linkedin.com/in/vitor' },
     { id: 'email', label: 'E-mail', href: 'mailto:two.developer.ofc@gmail.com' },
-    { id: 'patreon', label: 'Patreon', href: 'https://www.patreon.com/SEU_USUARIO' },
-    { id: 'discord', label: 'Discord', href: 'https://discord.com/users/913959527060226079' },
+    { id: 'patreon', label: 'Patreon', href: 'https://www.patreon.com/nero-developer' },
+    { id: 'discord', label: 'Discord', href: 'https://discord.com/users/1070475108742877294' },
   ],
   stack: [
     { icon: 'devicon-python-plain', label: 'Python' },

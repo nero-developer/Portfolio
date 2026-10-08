@@ -15,21 +15,38 @@ import { startMotes } from './motes';
 import { getTier, initTier, monitorFrames, onTierChange } from './perf';
 import { createPlayerView } from './player';
 import { createProfileView } from './profile';
+import { createViews, type PageView } from './views';
 import { createVolumeView } from './volume';
-import { createViews } from './views';
-import { createWallpaper } from './wallpaper';
+import { createBackdrop } from './wallpaper';
 
 initTier();
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const gate = byId<HTMLButtonElement>('gate');
+const compact = window.matchMedia('(max-width: 760px), (max-height: 560px)');
+const idleDelay = 1200;
 
-const wallpaper = createWallpaper(byId('wallpaper'));
+const gate = byId<HTMLButtonElement>('gate');
+const stage = byId('stage');
+const stack = byId('stack');
+const profile = byId('home').querySelector<HTMLElement>('.profile') as HTMLElement;
+
+const backdrops = {
+  home: createBackdrop(byId('wallpaper'), config.wallpapers.home, 'video'),
+  projects: createBackdrop(byId('projects'), config.wallpapers.projects, 'image'),
+  more: createBackdrop(byId('more'), config.wallpapers.more, 'image'),
+};
+
 const motes = !reducedMotion && getTier() === 'full' ? startMotes(byId<HTMLCanvasElement>('motes')) : null;
 onTierChange(() => motes?.stop());
 
 renderLinks(byId('links'));
-renderStack(byId('stack'));
+renderStack(stack);
+
+const placeStack = (): void => {
+  (compact.matches ? profile : stage).append(stack);
+};
+compact.addEventListener('change', placeStack);
+placeStack();
 
 const radio = createRadio(config.playlist);
 
@@ -60,23 +77,36 @@ const renderProfile = createProfileView({
 });
 const renderActivities = createActivitiesView(byId('activities'));
 
+const pages: Record<PageView, HTMLElement> = { projects: byId('projects'), more: byId('more') };
+const pulls: Record<PageView, HTMLButtonElement> = {
+  projects: byId<HTMLButtonElement>('pull-left'),
+  more: byId<HTMLButtonElement>('pull-up'),
+};
+
 createViews({
-  locked: [byId('home'), byId('volume')],
-  shifting: [...Array.from(document.querySelectorAll<HTMLElement>('.profile > :not(.pull)')), byId('volume')],
-  veil: byId('veil'),
-  projects: byId('projects'),
-  more: byId('more'),
-  pull: byId<HTMLButtonElement>('pull'),
+  stage,
+  locked: [stage, pulls.projects, pulls.more],
+  pages,
+  pulls,
+  hooks: {
+    open: (page) => backdrops[page].show(),
+    close: (page) => backdrops[page].hide(true),
+    cover: (covered) => (covered ? backdrops.home.hide() : backdrops.home.show()),
+  },
 });
 
 startCursor(byId('cursor'));
+backdrops.home.show();
 
 gate.addEventListener('click', () => {
   document.body.classList.add('entered');
   gate.classList.add('gone');
   radio.start();
-  wallpaper.play();
   monitorFrames();
+  window.setTimeout(() => {
+    backdrops.projects.preload();
+    backdrops.more.preload();
+  }, idleDelay);
 });
 
 watchPresence(config.discordId, (presence: Presence) => {

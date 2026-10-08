@@ -26,7 +26,9 @@ function isWeakDevice(): boolean {
   const cores = navigator.hardwareConcurrency || 4;
   const memory = nav.deviceMemory ?? 8;
   const saveData = nav.connection?.saveData === true;
-  return cores <= 2 || memory <= 2 || saveData || window.matchMedia('(prefers-reduced-data: reduce)').matches;
+  const touch = window.matchMedia('(pointer: coarse)').matches;
+  const lowData = window.matchMedia('(prefers-reduced-data: reduce)').matches;
+  return cores <= 2 || memory <= 2 || saveData || touch || lowData;
 }
 
 export function getTier(): Tier {
